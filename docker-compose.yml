@@ -1,0 +1,53 @@
+
+services:
+  php:
+    image: php:8.1-apache
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: php
+    restart: always
+    volumes:
+      - ./app:/var/www/html
+    ports:
+      - "8081:80"
+    links:
+      - postgres
+    networks:
+      - app
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postdba
+
+  postgres:
+    image: postgres:12
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postdba
+      POSTGRES_DB: crud
+    volumes:
+      - ./app/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - app
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: teste@gbiz0.com
+      PGADMIN_DEFAULT_PASSWORD: postdba
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - app
+
+networks:
+  app:
